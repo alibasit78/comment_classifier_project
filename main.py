@@ -2,7 +2,6 @@ import os
 
 import joblib
 import mlflow
-import torch
 from mlflow.models import infer_signature
 from omegaconf import OmegaConf
 from torch import cuda
@@ -14,7 +13,6 @@ from src.comment_clf.evaluation import compute_eval_report
 from src.comment_clf.loader import create_dataloader
 from src.comment_clf.model import (
     BERTMODEL,
-    freeze_paramater,
     save_model,
 )
 from src.comment_clf.training import (
