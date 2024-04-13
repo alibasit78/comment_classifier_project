@@ -1,0 +1,5 @@
+Questions:
+    Q1: Does the new data would come?
+    A: Yes, every week
+    Q2: Do we need re-training?
+    A: Yes, every week

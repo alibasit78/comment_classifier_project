@@ -1,0 +1,19 @@
+data_base_dir: /home/alibasit/mlops/comment_project
+
+data:
+  train_data: data/train_data/train.csv
+  test_data: data/test_data/test.csv
+  test_labels: data/test_labels/test_labels.csv
+  save_dir: data/pre_processed
+
+train:
+  seed: 200
+  train_size: 0.8
+  max_len: 200
+  train_bs: 32
+  test_bs: 32
+  epochs: 2
+  learning_rate: 1e-05
+  tokenizer_name: bert-base-uncased
+  model_name: bert-base-uncased
+  save_dir: model/model_1.pkl
