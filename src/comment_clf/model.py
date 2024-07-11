@@ -24,7 +24,7 @@ def count_parameters(model):
 
 def freeze_paramater(model):
     # Freeze the embedding layer and the first 5 transformer layers
-    modules_to_freeze = [model.l1.embeddings, *model.l1.encoder.layer[:12]]
+    modules_to_freeze = [model.bert.embeddings, *model.bert.encoder.layer[:12]]
     for module in modules_to_freeze:
         for param in module.parameters():
             param.requires_grad = False
@@ -41,18 +41,18 @@ def load_model(model_path):
 class BERTMODEL(torch.nn.Module):
     def __init__(self, config):
         super(BERTMODEL, self).__init__()
-        self.l1 = BertModel.from_pretrained(config.train.model_name)
-        self.l2 = torch.nn.Dropout(0.3)
-        self.l3 = torch.nn.Linear(768, 6)
+        self.bert = BertModel.from_pretrained(config.train.model_name)
+        self.dropout = torch.nn.Dropout(0.3)
+        self.linear = torch.nn.Linear(768, 6)
 
     def forward(self, ids, mask, token_type_ids):
         """forward pass"""
-        _, output_1 = self.l1(
+        _, output = self.bert(
             ids, attention_mask=mask, token_type_ids=token_type_ids, return_dict=False
         )
         # print("modl forward: ", output_1.shape)
-        output_2 = self.l2(output_1)
-        output = self.l3(output_2)
+        output = self.dropout(output)
+        output = self.linear(output)
         return output
 
 

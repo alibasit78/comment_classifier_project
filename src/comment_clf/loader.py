@@ -11,6 +11,9 @@ from transformers import (
 from src.comment_clf.constant import CONFIG_PATH
 from src.comment_clf.custom_dataset import CustomDataset
 
+# from constant import CONFIG_PATH
+# from custom_dataset import CustomDataset
+
 
 def create_dataloader(dataset, tokenizer, config, mode):
     """Return the dataloader for the given dataset"""
@@ -19,9 +22,12 @@ def create_dataloader(dataset, tokenizer, config, mode):
         training_set = CustomDataset(dataset, tokenizer, config.train.max_len)
         train_params = {"batch_size": config.train.train_bs, "shuffle": True, "num_workers": 0}
         return DataLoader(training_set, **train_params, collate_fn=data_collator)
-    testing_set = CustomDataset(dataset, tokenizer, config.train.max_len)
-    test_params = {"batch_size": config.train.test_bs, "shuffle": True, "num_workers": 0}
-    return DataLoader(testing_set, **test_params, collate_fn=data_collator)
+        # return DataLoader(training_set, **train_params)
+    else:
+        testing_set = CustomDataset(dataset, tokenizer, config.train.max_len)
+        test_params = {"batch_size": config.train.test_bs, "shuffle": False, "num_workers": 0}
+        return DataLoader(testing_set, **test_params, collate_fn=data_collator)
+        # return DataLoader(testing_set, **test_params)
 
 
 if __name__ == "__main__":
@@ -29,7 +35,7 @@ if __name__ == "__main__":
     train_ds_path = os.path.join(config.data_base_dir, config.data.save_dir, "train.pkl")
     train_size = config.train.train_size
 
-    tokenizer = tokenizer = BertTokenizer.from_pretrained(config.train.tokenizer_name)
+    tokenizer = BertTokenizer.from_pretrained(config.train.tokenizer_name)
     # new_df = pd.read_csv(train_ds_path)
     new_df = joblib.load(train_ds_path)
     train_dataset = new_df.sample(frac=train_size, random_state=config.train.seed)

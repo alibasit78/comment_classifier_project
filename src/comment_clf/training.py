@@ -10,11 +10,7 @@ from src.comment_clf import logger
 from src.comment_clf.constant import CONFIG_PATH
 from src.comment_clf.evaluation import compute_eval_report
 from src.comment_clf.loader import create_dataloader
-from src.comment_clf.model import (
-    BERTMODEL,
-    count_parameters,
-    freeze_paramater,
-)
+from src.comment_clf.model import BERTMODEL
 
 
 def loss_fn(outputs, targets):
@@ -44,41 +40,51 @@ def validation(model, testing_loader, device):
 def train(config, epoch, model, training_loader, device):
     optimizer = torch.optim.Adam(params=model.parameters(), lr=config.train.learning_rate)
     model.train()
+    running_loss = 0.0
     for i, data in enumerate(training_loader, 0):
         ids = data["input_ids"].to(device, dtype=torch.long)
         mask = data["attention_mask"].to(device, dtype=torch.long)
         token_type_ids = data["token_type_ids"].to(device, dtype=torch.long)
         targets = data["targets"].to(device, dtype=torch.float)
-
-        print(f"ids: {ids.shape}")
-
+        # print(f"ids: {ids.shape}")
         outputs = model(ids, mask, token_type_ids)
-
-        optimizer.zero_grad()
+        # print("outputs shape: ", outputs.shape)
         loss = loss_fn(outputs, targets)
+        running_loss += loss.item()
         if i % 10 == 0:
-            # print(f"Epoch: {epoch}, Loss:  {loss.item()}")
-            print("steps: ", i)
-
-        optimizer.zero_grad()
+            print(f"Epoch: {epoch}, Steps: {i} Loss:  {loss.item()}")
+            # print("steps: ", i)
         loss.backward()
         optimizer.step()
-    return model, loss.item() / len(training_loader)
+    return model, running_loss / len(training_loader)
 
 
-def training(config, model, training_loader, test_dataloader, device):
+def training(config, model, training_loader, test_dataloader, device, mlflow=None):
     """training the bert model"""
-    freeze_paramater(model)
-    count_parameters(model)
     train_loss = []
     valid_loss = []
+    prev_accuracy = -1
+    best_model = None
     for epoch in range(config.train.epochs):
         model, loss = train(config, epoch, model, training_loader, device)
         train_loss.append(loss)
-        print("EPOCH: ", epoch, "loss: ", loss)
+        print("Completed EPOCH: ", epoch, "train loss: ", loss)
         outputs, targets, v_loss = validation(model, test_dataloader, device)
         valid_loss.append(v_loss)
-        compute_eval_report(outputs, targets, message="validation")
+        accuracy, f1_score_micro, f1_score_macro = compute_eval_report(
+            outputs, targets, message="validation"
+        )
+        # if f1_score_micro >= prev_f1_score_micro:
+        if accuracy >= prev_accuracy:
+            # prev_f1_score_micro = f1_score_micro
+            prev_accuracy = accuracy
+            logger.info(f"Checkpointing model at epoch {epoch} and accuracy is: {accuracy}")
+            # best_model = copy.deepcopy(model.state_dict())
+            best_model = model
+            # save_model(best_model, config.train.save_model_path)
+            mlflow.pytorch.log_model(best_model, "pytorch_model")
+        else:
+            logger.info("validation eval is not greater than prev validation eval")
     return model, train_loss, valid_loss
 
 

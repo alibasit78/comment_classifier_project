@@ -17,13 +17,25 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         comment_text = str(self.comment_text[index])
         comment_text = " ".join(comment_text.split())
+        # print(type(comment_text), comment_text)
 
-        inputs = self.tokenizer.encode_plus(
+        # inputs = self.tokenizer.encode_plus(
+        #     comment_text,
+        #     None,
+        #     add_special_tokens=True,
+        #     # max_length=self.max_len,
+        #     max_length="max_length",
+        #     # padding=True,
+        #     return_token_type_ids=True,
+        #     truncation=True,
+        # )
+        inputs = self.tokenizer(
             comment_text,
             None,
             add_special_tokens=True,
             max_length=self.max_len,
-            padding=True,
+            # max_length="max_length",
+            # padding=True,
             return_token_type_ids=True,
             truncation=True,
         )
@@ -36,7 +48,7 @@ class CustomDataset(Dataset):
                 "input_ids": torch.tensor(ids, dtype=torch.long),
                 "attention_mask": torch.tensor(mask, dtype=torch.long),
                 "token_type_ids": torch.tensor(token_type_ids, dtype=torch.long),
-                "targets": torch.tensor(self.targets[index], dtype=torch.float),
+                "targets": torch.tensor(self.targets[index], dtype=torch.float32),
             }
         return {
             "input_ids": torch.tensor(ids, dtype=torch.long),
