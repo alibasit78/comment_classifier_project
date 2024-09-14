@@ -7,5 +7,8 @@ Comment Classifier to predict whether a comment belongs to any of the following 
 6. identity_hate
 
 Technologies used:
-1. HuggingFace
-2. MLflow
+1. Torch 
+2. HuggingFace
+3. MLflow
+4. Linting Tools
+5. OmegaConfig
