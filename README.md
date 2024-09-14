@@ -5,6 +5,7 @@ Comment Classifier to predict whether a comment belongs to any of the following 
 4. threat
 5. insult
 6. identity_hate
+
 Technologies used:
 1. HuggingFace
 2. MLflow
